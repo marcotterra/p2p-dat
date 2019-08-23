@@ -26,10 +26,8 @@ const sendMessage = (id, type, data) => {
   ));
 };
 
-const writeMessage = (type, data) => {
+const writeMessageToAllPeers = (type, data) => {
   for (let id in peers) {
-    console.log('\n Write message');
-    console.table({ 'Type': type, 'To': id })
     sendMessage(id, type, data);
   }
 };
@@ -38,13 +36,13 @@ const registerMe = () => {
   setTimeout(() => {
     let me = myId.toString('hex');
     registeredPeers.push(me);
-    writeMessage(MessageType.REGISTER_PEER, registeredPeers)
+    writeMessageToAllPeers(MessageType.REGISTER_PEER, registeredPeers)
   }, 5000)
 }
 
 (async () => {
   const config = defaults({ id: myId });
-  const swrm = swarm(config);
+  const swrm = swarm();
   const channel = "trk-123";
   const port = process.env.PORT || await getPort();
   console.log('Listening port: ' + port);
@@ -65,7 +63,6 @@ const registerMe = () => {
       try {
         conn.setKeepAlive(true, 600);
       } catch (exception) {
-        console.log(exception)
         console.log('exception', exception);
       }
     }
@@ -110,7 +107,7 @@ const registerMe = () => {
             'Message': JSON.stringify(message.data)
           })
 
-          writeMessage(MessageType.REGISTER_PEER, registeredPeers);
+          writeMessageToAllPeers(MessageType.REGISTER_PEER, registeredPeers);
           registeredPeers = JSON.parse(JSON.stringify(message.data));
           break;
       }
@@ -128,7 +125,7 @@ const registerMe = () => {
 
 
 setTimeout(function () {
-  writeMessage(MessageType.REQUEST_ALL_REGISTER_PEERS, { message: "========== PING ==========" });
+  writeMessageToAllPeers(MessageType.REQUEST_ALL_REGISTER_PEERS, { message: "========== PING ==========" });
 }, 5000);
 
 setTimeout(() => {
